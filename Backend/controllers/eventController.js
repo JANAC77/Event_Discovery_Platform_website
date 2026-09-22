@@ -1,5 +1,15 @@
 const Event = require('../models/Event');
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
+
+// Helper function to create URL slug from event name
+const createSlug = (name) => {
+  return (name || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
 
 // @desc    Get all events with search, filter, and sorting
 // @route   GET /api/events
@@ -45,7 +55,7 @@ exports.getEvents = async (req, res) => {
     }
 
     // Sorting
-    let sort = { startDate: 1 }; // Default: earliest start date first
+    let sort = { startDate: 1 };
     if (sortBy === 'name') {
       sort = { name: sortOrder === 'desc' ? -1 : 1 };
     } else if (sortBy === 'startDate') {
@@ -56,7 +66,6 @@ exports.getEvents = async (req, res) => {
 
     const events = await Event.find(query).sort(sort);
 
-    // Compute meta stats for summary dashboard
     const stats = {
       total: events.length,
       upcoming: events.filter(e => e.status === 'UPCOMING').length,
@@ -81,17 +90,29 @@ exports.getEvents = async (req, res) => {
   }
 };
 
-// @desc    Get single event by ID
+// @desc    Get single event by ID or Event Name Slug
 // @route   GET /api/events/:id
 // @access  Public
 exports.getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const identifier = req.params.id;
+    let event = null;
+
+    // Check if identifier is valid MongoDB ObjectId
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      event = await Event.findById(identifier);
+    }
+
+    // If not found by ObjectId, search by Event Name slug
+    if (!event) {
+      const allEvents = await Event.find();
+      event = allEvents.find(e => createSlug(e.name) === identifier.toLowerCase());
+    }
 
     if (!event) {
       return res.status(404).json({
         success: false,
-        message: `Event not found with ID: ${req.params.id}`
+        message: `Event not found: ${identifier}`
       });
     }
 
@@ -100,12 +121,6 @@ exports.getEventById = async (req, res) => {
       data: event
     });
   } catch (error) {
-    if (error.kind === 'ObjectId') {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid Event ID format'
-      });
-    }
     res.status(500).json({
       success: false,
       message: 'Server error while retrieving event details',
@@ -119,7 +134,6 @@ exports.getEventById = async (req, res) => {
 // @access  Public / Admin
 exports.createEvent = async (req, res) => {
   try {
-    // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -145,7 +159,6 @@ exports.createEvent = async (req, res) => {
       status
     } = req.body;
 
-    // Validate dates
     if (new Date(endDate) < new Date(startDate)) {
       return res.status(400).json({
         success: false,
@@ -227,12 +240,6 @@ exports.updateEvent = async (req, res) => {
       data: event
     });
   } catch (error) {
-    if (error.kind === 'ObjectId') {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid Event ID format'
-      });
-    }
     res.status(500).json({
       success: false,
       message: 'Server error while updating event',
@@ -263,12 +270,6 @@ exports.deleteEvent = async (req, res) => {
       data: { id: req.params.id }
     });
   } catch (error) {
-    if (error.kind === 'ObjectId') {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid Event ID format'
-      });
-    }
     res.status(500).json({
       success: false,
       message: 'Server error while deleting event',

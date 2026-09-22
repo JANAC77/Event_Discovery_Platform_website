@@ -9,8 +9,18 @@ const STATUS_CONFIG = {
   DRAFT: { bg: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500', label: 'Draft' },
 };
 
+// Helper function to create URL slug from event name
+const createSlug = (name) => {
+  return (name || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
 export default function EventCard({ event, onViewDetails }) {
   const statusInfo = STATUS_CONFIG[event.status] || STATUS_CONFIG.UPCOMING;
+  const eventSlug = createSlug(event.name) || event.id;
 
   const formatDateRange = (startStr, endStr) => {
     try {
@@ -33,7 +43,7 @@ export default function EventCard({ event, onViewDetails }) {
     <div className="glass-card rounded-3xl overflow-hidden flex flex-col group h-full bg-white border border-slate-200 shadow-md hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
       
       {/* Event Banner Image Link */}
-      <Link to={`/events/${event.id}`} className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 block">
+      <Link to={`/events/${eventSlug}`} className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 block">
         <img
           src={event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80'}
           alt={event.name}
@@ -75,7 +85,7 @@ export default function EventCard({ event, onViewDetails }) {
 
           {/* Event Title Link */}
           <Link 
-            to={`/events/${event.id}`}
+            to={`/events/${eventSlug}`}
             className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors block line-clamp-2 mb-2 tracking-tight"
           >
             {event.name}
@@ -107,7 +117,7 @@ export default function EventCard({ event, onViewDetails }) {
           </div>
 
           <Link
-            to={`/events/${event.id}`}
+            to={`/events/${eventSlug}`}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-bold border border-blue-200 hover:border-blue-600 transition-all shadow-sm"
           >
             <span>View Details</span>
