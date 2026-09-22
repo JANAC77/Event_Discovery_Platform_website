@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import EventDiscovery from './pages/EventDiscovery';
-import EventDetailsModal from './components/EventDetailsModal';
+import EventDetailsPage from './pages/EventDetailsPage';
 import ToastNotification from './components/ToastNotification';
 import { fetchEvents } from './services/api';
 
 export default function App() {
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+  const [viewMode, setViewMode] = useState('grid');
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -21,17 +22,14 @@ export default function App() {
     sortOrder: 'asc'
   });
 
-  // Details Modal State
-  const [selectedEventForDetails, setSelectedEventForDetails] = useState(null);
-
-  // Toast Notification State
+  // Toast State
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
   };
 
-  // Load public events from API
+  // Load public events
   const loadEvents = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -62,51 +60,60 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col font-sans">
-      
-      {/* Navbar */}
-      <Navbar />
+    <BrowserRouter>
+      <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans">
+        
+        {/* Navbar */}
+        <Navbar />
 
-      {/* Public Event Discovery Page */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <EventDiscovery
-          events={events}
-          filters={filters}
-          setFilters={setFilters}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          onResetFilters={resetFilters}
-          onViewDetails={(evt) => setSelectedEventForDetails(evt)}
-          isLoading={isLoading}
+        {/* Page Content with Routes */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Routes>
+            {/* Route 1: Main Event Discovery Portal */}
+            <Route
+              path="/"
+              element={
+                <EventDiscovery
+                  events={events}
+                  filters={filters}
+                  setFilters={setFilters}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                  onResetFilters={resetFilters}
+                  isLoading={isLoading}
+                />
+              }
+            />
+
+            {/* Route 2: Dedicated Event Details Page */}
+            <Route
+              path="/events/:id"
+              element={<EventDetailsPage />}
+            />
+          </Routes>
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 font-semibold">
+              <span className="font-bold text-slate-900">EventHub Public Portal</span>
+              <span>&copy; 2026 Route Enabled (/events/:id)</span>
+            </div>
+            <div className="flex items-center gap-4 text-slate-500 font-medium">
+              <span>React Router Portal (Port 5173)</span>
+              <span>Admin Console (Port 5174)</span>
+            </div>
+          </div>
+        </footer>
+
+        {/* Toast Notification */}
+        <ToastNotification
+          toast={toast}
+          onClose={() => setToast(null)}
         />
-      </main>
 
-      {/* Public Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-8 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-300">EventHub Public Portal</span>
-            <span>&copy; 2026 Discovery Platform</span>
-          </div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>React Portal (Port 5173)</span>
-            <span>Admin Console (Port 5174)</span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Event Details Modal */}
-      <EventDetailsModal
-        event={selectedEventForDetails}
-        onClose={() => setSelectedEventForDetails(null)}
-      />
-
-      {/* Toast Notification */}
-      <ToastNotification
-        toast={toast}
-        onClose={() => setToast(null)}
-      />
-
-    </div>
+      </div>
+    </BrowserRouter>
   );
 }

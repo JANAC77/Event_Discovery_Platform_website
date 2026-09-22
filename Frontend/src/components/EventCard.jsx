@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Building, ArrowRight, UserCheck, Tag } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -31,8 +32,8 @@ export default function EventCard({ event, onViewDetails }) {
   return (
     <div className="glass-card rounded-3xl overflow-hidden flex flex-col group h-full bg-white border border-slate-200 shadow-md hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
       
-      {/* Event Banner Image */}
-      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
+      {/* Event Banner Image Link */}
+      <Link to={`/events/${event.id}`} className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 block">
         <img
           src={event.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80'}
           alt={event.name}
@@ -54,14 +55,14 @@ export default function EventCard({ event, onViewDetails }) {
           {event.category}
         </div>
 
-        {/* Date Overlay Ribbon */}
+        {/* Date Overlay */}
         <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2 text-xs font-semibold">
           <div className="flex items-center gap-1.5 bg-slate-900/90 text-white px-3 py-1 rounded-xl border border-slate-700 backdrop-blur-md">
             <Calendar className="w-3.5 h-3.5 text-blue-400" />
             <span>{formatDateRange(event.startDate, event.endDate)}</span>
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Content Area */}
       <div className="p-6 flex-1 flex flex-col justify-between">
@@ -72,13 +73,13 @@ export default function EventCard({ event, onViewDetails }) {
             <span>{event.industry}</span>
           </div>
 
-          {/* Event Title */}
-          <h3 
-            onClick={() => onViewDetails(event)}
-            className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 mb-2 tracking-tight"
+          {/* Event Title Link */}
+          <Link 
+            to={`/events/${event.id}`}
+            className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors block line-clamp-2 mb-2 tracking-tight"
           >
             {event.name}
-          </h3>
+          </Link>
 
           {/* Description */}
           <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 mb-4 leading-relaxed font-normal">
@@ -98,20 +99,20 @@ export default function EventCard({ event, onViewDetails }) {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Link */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
           <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
             <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span className="truncate max-w-[120px] font-semibold">{event.organizer}</span>
           </div>
 
-          <button
-            onClick={() => onViewDetails(event)}
+          <Link
+            to={`/events/${event.id}`}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-bold border border-blue-200 hover:border-blue-600 transition-all shadow-sm"
           >
             <span>View Details</span>
             <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          </Link>
         </div>
 
       </div>
